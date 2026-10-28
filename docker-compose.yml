@@ -1,0 +1,21 @@
+services:
+  event-helper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: event-helper:latest
+    container_name: event-helper
+    restart: unless-stopped
+    expose:
+      - "8000"
+    environment:
+      VIRTUAL_HOST: event-helper.lumen.my.id
+      VIRTUAL_PORT: "8000"
+      LETSENCRYPT_HOST: ${LETSENCRYPT_HOST}
+      LETSENCRYPT_EMAIL: ${LETSENCRYPT_EMAIL}
+    networks:
+      - proxy
+
+networks:
+  proxy:
+    external: true

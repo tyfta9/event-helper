@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Find free rooms</title>
+</head>
+<body>
+  <main>
+    <h1>Find free rooms</h1>
+    <form id="search-form">
+      <label>
+        Date
+        <input id="date" name="date" type="date" required>
+      </label>
+      <br>
+      <label>
+        Start time
+        <input id="start" name="start" type="time" required>
+      </label>
+      <br>
+      <label>
+        End time
+        <input id="end" name="end" type="time" required>
+      </label>
+      <br>
+      <label>
+        Minimum capacity
+        <input id="capacity" name="capacity" type="number" min="0" step="1" value="0" required>
+      </label>
+      <br>
+      <button type="submit">Print data</button>
+      <button id="all-rooms" type="button">Print all room names</button>
+    </form>
+
+    <output id="result" aria-live="polite"></output>
+  </main>
+
+  <script>
+    const form = document.querySelector('#search-form');
+    const result = document.querySelector('#result');
+
+    async function requestRooms(endpoint) {
+      const data = new FormData(form);
+      result.textContent = 'Searching...';
+      try {
+        const response = await fetch(endpoint, {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({
+            date: data.get('date'),
+            start: data.get('start'),
+            end: data.get('end'),
+            capacity: data.get('capacity'),
+          }),
+        });
+        const payload = await response.json();
+        if (!response.ok) {
+          result.textContent = payload.error || 'Search failed.';
+          return;
+        }
+        result.textContent = payload.rooms.length
+          ? payload.rooms.join('\n')
+          : endpoint === '/search' ? 'No free rooms found.' : 'No rooms found.';
+      } catch (error) {
+        result.textContent = `Search failed: ${error.message}`;
+      }
+      result.style.whiteSpace = 'pre-line';
+    }
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      requestRooms('/search');
+    });
+
+    document.querySelector('#all-rooms').addEventListener('click', () => {
+      if (!form.reportValidity()) return;
+      requestRooms('/rooms');
+    });
+  </script>
+</body>
+</html>
