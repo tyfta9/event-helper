@@ -14,13 +14,18 @@ ROOT = Path(__file__).parent
 
 class RequestHandler(BaseHTTPRequestHandler):
     def do_GET(self):
-        if self.path != '/':
+        files = {
+            '/': ('index.html', 'text/html; charset=utf-8'),
+            '/style.css': ('style.css', 'text/css; charset=utf-8'),
+        }
+        if self.path not in files:
             self.send_error(404)
             return
 
-        content = (ROOT / 'index.html').read_bytes()
+        filename, content_type = files[self.path]
+        content = (ROOT / filename).read_bytes()
         self.send_response(200)
-        self.send_header('Content-Type', 'text/html; charset=utf-8')
+        self.send_header('Content-Type', content_type)
         self.send_header('Content-Length', str(len(content)))
         self.end_headers()
         self.wfile.write(content)
