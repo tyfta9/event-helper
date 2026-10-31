@@ -45,15 +45,18 @@
       const data = new FormData(form);
       result.textContent = 'Searching...';
       try {
+        const body = endpoint === '/rooms'
+          ? {}
+          : {
+              date: data.get('date'),
+              start: data.get('start'),
+              end: data.get('end'),
+              capacity: data.get('capacity'),
+            };
         const response = await fetch(endpoint, {
           method: 'POST',
           headers: {'Content-Type': 'application/json'},
-          body: JSON.stringify({
-            date: data.get('date'),
-            start: data.get('start'),
-            end: data.get('end'),
-            capacity: data.get('capacity'),
-          }),
+          body: JSON.stringify(body),
         });
         const payload = await response.json();
         if (!response.ok) {
@@ -75,7 +78,6 @@
     });
 
     document.querySelector('#all-rooms').addEventListener('click', () => {
-      if (!form.reportValidity()) return;
       requestRooms('/rooms');
     });
   </script>

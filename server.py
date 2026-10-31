@@ -1,6 +1,6 @@
 import json
 import re
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
@@ -37,8 +37,15 @@ class RequestHandler(BaseHTTPRequestHandler):
 
         try:
             data = self._read_json()
-            start, end = self._parse_interval(data)
-            minimum_capacity = self._parse_capacity(data)
+            if self.path == '/rooms':
+                start = datetime.now(timezone.utc).replace(
+                    hour=0, minute=0, second=0, microsecond=0
+                )
+                end = start + timedelta(days=1)
+                minimum_capacity = 0
+            else:
+                start, end = self._parse_interval(data)
+                minimum_capacity = self._parse_capacity(data)
             if end <= start:
                 raise ValueError('end time must be after start time')
             if self.path == '/search':
